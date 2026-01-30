@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +58,7 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
-
+	
 /**
   * @brief  The application entry point.
   * @retval int
@@ -67,7 +67,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+char *str = "Hello/n";
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -98,8 +98,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+		HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen(str),500);
     /* USER CODE BEGIN 3 */
+		HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }

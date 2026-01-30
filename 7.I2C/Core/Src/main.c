@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <math.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,72 +51,73 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-
+#define ADD 0xD0
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define 		ADD 		0xD0
-#define     RTD     57.2957
-int16_t ax = 0, ay = 0 , az = 0, gx = 0 ,gy = 0 , gz = 0;
-float AX,AY,AZ,GX,GY,GZ; // G?a tri tho doc tu cam bien & da chia
 
-float pitch = 0;
-float roll = 0;
 
-void MPU6050Init(void){
-	uint8_t check;
-	uint8_t mData;
-	HAL_I2C_Mem_Read(&hi2c1,ADD, 0x75,1, &check,1,1000);
-	if(check == 0x68){
-		mData = 0x00; 
-		HAL_I2C_Mem_Write(&hi2c1, ADD,0x6B,1,&mData,1,1000);
-		mData = 0x07;
-		HAL_I2C_Mem_Write(&hi2c1, ADD,0x19,1,&mData,1,1000);
-		mData = 0x00; 
-		HAL_I2C_Mem_Write(&hi2c1, ADD,0x1B,1,&mData,1,1000);
-		mData = 0x00;
-		HAL_I2C_Mem_Write(&hi2c1, ADD,0x1C,1,&mData,1,1000);
+int16_t ax = 0, ay = 0, az = 0, gx = 0, gy = 0, gz = 0;
+uint8_t whoami = 0;
+
+void MPU6050_Test(void)
+{
+    uint8_t buf[6];
+    uint8_t data = 0x00;
+
+    // 1. Ð?c WHO_AM_I
+    HAL_I2C_Mem_Read(&hi2c1, ADD, 0x75, 1, &whoami, 1, 1000);
+
+    // 2. Thoát sleep
+    HAL_I2C_Mem_Write(&hi2c1, ADD, 0x6B, 1, &data, 1, 1000);
+
+    // 3. Ð?c Accel
+    HAL_I2C_Mem_Read(&hi2c1, ADD, 0x3B, 1, buf, 6, 1000);
+
+    ax = (buf[0] << 8) | buf[1];
+    ay = (buf[2] << 8) | buf[3];
+    az = (buf[4] << 8) | buf[5];
+}
+
+void MPU6050Init(void)
+	{
+		uint8_t check;
+		uint8_t mData;
+		HAL_I2C_Mem_Read(&hi2c1, ADD , 0x75, 1, &check, 1, 1000);
+		if(check == 0x68)
+		{
+			mData = 0x00;
+			HAL_I2C_Mem_Write(&hi2c1, ADD, 0x6B, 1, &mData, 1, 1000);  
+			mData = 0x07;
+			HAL_I2C_Mem_Write(&hi2c1, ADD, 0x19, 1, &mData, 1, 1000);  
+			mData = 0x00;
+			HAL_I2C_Mem_Write(&hi2c1, ADD, 0x1B, 1, &mData, 1, 1000);  
+			mData = 0x00;
+			HAL_I2C_Mem_Write(&hi2c1, ADD, 0x1C, 1, &mData, 1, 1000);  
+		}
 	}
 	
-}
-
-void MPU6050ReadG(void){
-	uint8_t dataG[6];
 	
-	HAL_I2C_Mem_Read(&hi2c1,ADD, 0x43,1, dataG,6,1000);
-	gx = (int16_t)(dataG[0] << 8 | dataG[1]);
-	gy = (int16_t)(dataG[2] << 8 | dataG[3]);
-	gz = (int16_t)(dataG[4] << 8 | dataG[5]);
-	GX = (float)gx/131.0;
-	GY = (float)gy/131.0;
-	GZ = (float)gz/131.0;
-}
-void MPU6050ReadA(void){
-	uint8_t dataA[6];
-	HAL_I2C_Mem_Read(&hi2c1,ADD, 0x3B,1, dataA,6,1000);
-	ax = (int16_t)(dataA[0] << 8 | dataA[1]);
-	ay = (int16_t)(dataA[2] << 8 | dataA[3]);
-	az = (int16_t)(dataA[4] << 8 | dataA[5]);
-	AX = (float)ax/16384.0;
-	AY = (float)ay/16384.0;
-	AZ = (float)az/16384.0;
-}
-
-
-void filter(float AX, float AY, float AZ, float GX, float GY, float GZ){
+	void MPU6050ReadG(void)
+	{
+		uint8_t dataG[6];
+		HAL_I2C_Mem_Read(&hi2c1, ADD , 0x43, 1, dataG , 6, 1000);
+		gx = (int16_t)(dataG[0] << 8 | dataG[1]);
+		gy = (int16_t)(dataG[2] << 8 | dataG[3]);
+		gz = (int16_t)(dataG[4] << 8 | dataG[5]);
+	}
 	
-	float pitchG = pitch + GX*(10000/1000000.0f);
-	float rollG = roll + GY*(10000/1000000.0f);
 	
-	float pitchA = atan2(AY, sqrt(AX*AX + AZ * AZ))*RTD;
-	float rollA = atan2(AX, sqrt(AY*AY + AZ*AZ))*RTD;
-	
-	pitch = 0.98*pitchG + 0.02*pitchA;
-	roll = 0.98*rollG + 0.02*rollA;
-
-}
-/* USER CODE END 0 */
+void MPU6050ReadA(void)
+	{
+		uint8_t dataA[6];
+		HAL_I2C_Mem_Read(&hi2c1, ADD , 0x3B, 1, dataA , 6, 1000);
+		ax = (int16_t)(dataA[0] << 8 | dataA[1]);
+		ay = (int16_t)(dataA[2] << 8 | dataA[3]);
+		az = (int16_t)(dataA[4] << 8 | dataA[5]);
+	}
+	/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -148,8 +149,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
-  /* USER CODE BEGIN 2 */
+	MPU6050_Test();
 	MPU6050Init();
+  /* USER CODE BEGIN 2 */
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -159,8 +162,7 @@ int main(void)
     /* USER CODE END WHILE */
 		MPU6050ReadG();
 		MPU6050ReadA();
-		filter(AX,AY,AZ,GX,GY,GZ);
-		HAL_Delay(100);
+		HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -186,12 +188,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 64;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -201,9 +198,9 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV8;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
