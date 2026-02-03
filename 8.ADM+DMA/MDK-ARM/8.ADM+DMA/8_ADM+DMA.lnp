@@ -1,0 +1,26 @@
+--cpu=Cortex-M4.fp.sp
+"8.adm+dma\startup_stm32f407xx.o"
+"8.adm+dma\main.o"
+"8.adm+dma\stm32f4xx_it.o"
+"8.adm+dma\stm32f4xx_hal_msp.o"
+"8.adm+dma\stm32f4xx_hal_adc.o"
+"8.adm+dma\stm32f4xx_hal_adc_ex.o"
+"8.adm+dma\stm32f4xx_hal_rcc.o"
+"8.adm+dma\stm32f4xx_hal_rcc_ex.o"
+"8.adm+dma\stm32f4xx_hal_flash.o"
+"8.adm+dma\stm32f4xx_hal_flash_ex.o"
+"8.adm+dma\stm32f4xx_hal_flash_ramfunc.o"
+"8.adm+dma\stm32f4xx_hal_gpio.o"
+"8.adm+dma\stm32f4xx_hal_dma_ex.o"
+"8.adm+dma\stm32f4xx_hal_dma.o"
+"8.adm+dma\stm32f4xx_hal_pwr.o"
+"8.adm+dma\stm32f4xx_hal_pwr_ex.o"
+"8.adm+dma\stm32f4xx_hal_cortex.o"
+"8.adm+dma\stm32f4xx_hal.o"
+"8.adm+dma\stm32f4xx_hal_exti.o"
+"8.adm+dma\stm32f4xx_hal_uart.o"
+"8.adm+dma\system_stm32f4xx.o"
+--strict --scatter "8.ADM+DMA\8_ADM+DMA.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "8_ADM+DMA.map" -o 8.ADM+DMA\8_ADM+DMA.axf
